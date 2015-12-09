@@ -1,0 +1,13 @@
+Name: MahMer
+IconPath: MahMer.png
+SoundPath: MahMer.wav
+Description: |
+    Mahshsad Soltan Mohammadi
+BrainsPackage: mahmer
+AgentsBrainClasses:
+    WarBase: WarBaseBrainController
+    WarExplorer: WarExplorerBrainController
+    WarRocketLauncher: WarRocketLauncherBrainController
+    WarKamikaze: WarKamikazeBrainController
+    WarEngineer: WarEngineerBrainController
+    WarTurret: WarTurretBrainController
