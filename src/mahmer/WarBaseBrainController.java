@@ -8,6 +8,7 @@ import edu.warbot.agents.percepts.WarAgentPercept;
 import edu.warbot.brains.brains.WarBaseBrain;
 import edu.warbot.communications.WarMessage;
 import edu.warbot.tools.geometry.CartesianCoordinates;
+import edu.warbot.tools.geometry.PolarCoordinates;
 
 public abstract class WarBaseBrainController extends WarBaseBrain {
 
@@ -27,30 +28,23 @@ public abstract class WarBaseBrainController extends WarBaseBrain {
   private void checkFindBase() {
 
     if (_baseDetected) {
-      broadcastMessageToAll(Messsages.MESSAGE_BASE_ENEMY_DETECTED, _baseEnemyAngle + "", _baseEnemyDistance + "");
-      setDebugString("Base Enemy Found " + _baseEnemyAngle + " " + _baseEnemyDistance);
       return;
     }
 
     for (WarMessage m : getMessages()) {
       if (!m.getMessage().equals(Messsages.MESSAGE_BASE_ENEMY_DETECTED))
         continue;
-      double angle_exp_enemy = Double.parseDouble(m.getContent()[0]);
-      double distance_exp_enemy = Double.parseDouble(m.getContent()[1]);
-
-      System.out.println("Base Enemy Recived ");
-      System.out.println(angle_exp_enemy + " " + distance_exp_enemy);
-      System.out.println(m.getAngle() + " " + m.getDistance());
-
-      Triangle tr = new Triangle(distance_exp_enemy, m.getDistance(), angle_exp_enemy + m.getAngle());
-      _baseEnemyDistance = tr.getC();
-      _baseEnemyAngle = tr.getBc();
+      
+      _baseEnemyAngle = Double.parseDouble(m.getContent()[0]);
+      _baseEnemyDistance = Double.parseDouble(m.getContent()[1]);
       _baseDetected = true;
-
       setDebugString("Base Enemy Recived " + _baseEnemyDistance + " " + _baseEnemyAngle);
-      System.out.println(_baseEnemyDistance + " " + _baseEnemyAngle);
+      System.out.println("Base Enemy at distance :"+_baseEnemyDistance + " angle:" + _baseEnemyAngle);
     }
   }
+  
+  
+  
 
 
   private String checkCreated() {
@@ -68,6 +62,31 @@ public abstract class WarBaseBrainController extends WarBaseBrain {
 
   }
 
+  
+  private void checkAskLocation(){
+      for(WarMessage m: getMessages()){
+          if(!m.getMessage().equals(Messsages.MESSAGE_BASE_LOCATION)) continue;
+              
+          switch (m.getSenderType()) {
+            case WarRocketLauncher: {
+                if (_baseDetected) {
+                    
+                    
+                    PolarCoordinates result = Triangle.getAngleWithDistance(_baseEnemyAngle, _baseEnemyDistance, m.getAngle(), m.getDistance());
+                    broadcastMessageToAgentType(WarAgentType.WarRocketLauncher,Messsages.MESSAGE_BASE_ORDER_ATTACK_AT, result.getAngle()+"");
+                    System.err.println("Base Send to "+ m.getSenderID() +" "+result.getAngle());
+                    return;
+                  }
+            }
+
+            default:
+                reply(m, Messsages.MESSAGE_BASE_LOCATION);
+                break;
+        }
+              
+      }
+  }
+  
   private void setLastHealth() {
     if (_lastHealth == -1)
       _lastHealth = getHealth();
@@ -92,9 +111,9 @@ public abstract class WarBaseBrainController extends WarBaseBrain {
     }
     setLastHealth();
     checkUnderAttack();
-
     checkFindBase();
-
+    checkAskLocation();
+    
     if (getNbElementsInBag() >= 0 && getHealth() <= 0.8 * getMaxHealth())
       return WarBase.ACTION_EAT;
 

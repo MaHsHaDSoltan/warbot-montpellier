@@ -7,11 +7,13 @@ import edu.warbot.communications.WarMessage;
 
 public abstract class WarRocketLauncherBrainController extends WarRocketLauncherBrain {
 
-  boolean _underattack;
+  boolean _defend;
+  boolean _attack;
 
   public WarRocketLauncherBrainController() {
     super();
-    _underattack = false;
+    _defend = false;
+    _attack = false;
   }
 
   private void checkBaseAttack() {
@@ -20,34 +22,46 @@ public abstract class WarRocketLauncherBrainController extends WarRocketLauncher
       if (m.getMessage().equals(Messsages.MESSAGE_UNDER_ATTACK)) {
         setDebugString("i am in my way");
         setHeading(m.getAngle());
-        _underattack = true;
+        _defend = true;
         return;
       }
     }
 
-    if (_underattack)
+    if (_defend)
       setDebugString("i am in my way");
 
   }
 
-  private void checkBaseFound() {
-    if (_underattack)
-      return;
+  private void checkBaseOrder() {
+      if(_attack) {
+          return;
+      }
     for (WarMessage m : getMessages()) {
-      if (m.getMessage().equals(Messsages.MESSAGE_BASE_ENEMY_DETECTED)) {
-        setDebugString("to the enemy base");
-        double angle_our_enmey = Double.parseDouble(m.getContent()[0]);
-        double distance_our_enmey = Double.parseDouble(m.getContent()[1]);
-        Triangle tr = new Triangle(distance_our_enmey, m.getDistance(), m.getAngle() + angle_our_enmey);
-        //setHeading(tr.getCa());
+      if (m.getMessage().equals(Messsages.MESSAGE_BASE_ORDER_GO_TO)) {
+        double angle = Double.parseDouble(m.getContent()[0]);
+        setDebugString("i will go to "+ angle);
+        System.out.println(toString() +"Direction "+angle);
+        setHeading(angle);
+      } else if (m.getMessage().equals(Messsages.MESSAGE_BASE_ORDER_ATTACK_AT)){
+          double angle = Double.parseDouble(m.getContent()[0]);
+          setDebugString("to the enemy base at "+ angle);
+          System.out.println(getID()  +"Direction "+angle);
+          setHeading(angle);
+          _attack = true;
       }
     }
+    
+    // send my position at base
+    broadcastMessageToAgentType(WarAgentType.WarBase, Messsages.MESSAGE_BASE_LOCATION);
   }
+  
+  
 
 
   private String tryAttack() {
     for (WarAgentPercept wp : getPerceptsEnemies()) {
       if (wp.getType().equals(WarAgentType.WarBase)) {
+          _attack= false;
         setHeading(wp.getAngle());
         if (isReloaded())
           return ACTION_FIRE;
@@ -76,7 +90,7 @@ public abstract class WarRocketLauncherBrainController extends WarRocketLauncher
   @Override
   public String action() {
     checkBaseAttack();
-    checkBaseFound();
+    checkBaseOrder();
 
 
     String attack = tryAttack();

@@ -1,45 +1,23 @@
 package mahmer;
 
+import edu.warbot.tools.geometry.CartesianCoordinates;
+import edu.warbot.tools.geometry.PolarCoordinates;
+
 public class Triangle {
-	double a;
-	double b;
-	double c;
+    public static PolarCoordinates getAngleWithDistance(PolarCoordinates p1, PolarCoordinates p2) {
+        CartesianCoordinates base_enemy = p1.toCartesian();
+        CartesianCoordinates base_my = p2.toCartesian();
+        double angle = CartesianCoordinates.getAngleBetween(base_enemy, base_my);
+        double distance = CartesianCoordinates.distance(base_enemy.x, base_enemy.y, base_my.x, base_my.y);
+        return new PolarCoordinates(distance, angle);
+    }
 
-	double ab;
-	double bc;
-	double ca;
-
-	public Triangle(double a, double b, double ab) {
-		this.a = a;
-		this.b = b;
-		this.ab = ab;
-		init_c();
-		init_bc();
-		init_ca();
-	}
-
-	private void init_ca() {
-		ca = 180 - ab - bc;
-	}
-
-	private void init_c() {
-		c = Math.sqrt(a * a + b * b - 2 * a * b * Math.cos(ab));
-	}
-
-	private void init_bc() {
-		bc = Math.acos((b * b + c * c - a * a) / 2 * b * c);
-	}
-
-	public double getC() {
-		return c;
-	}
-
-	public double getBc() {
-		return bc;
-	}
-
-	public double getCa() {
-		return ca;
-	}
+    public static PolarCoordinates getAngleWithDistance(double phi1,
+                                                        double distance1,
+                                                        double phi2,
+                                                        double distance2) {
+        return getAngleWithDistance(new PolarCoordinates(distance1, phi1),
+                new PolarCoordinates(distance2, phi2));
+    }
 
 }
