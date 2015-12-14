@@ -70,11 +70,10 @@ public abstract class WarBaseBrainController extends WarBaseBrain {
           switch (m.getSenderType()) {
             case WarRocketLauncher: {
                 if (_baseDetected) {
-                    
-                    
                     PolarCoordinates result = Triangle.getAngleWithDistance(_baseEnemyAngle, _baseEnemyDistance, m.getAngle(), m.getDistance());
-                    broadcastMessageToAgentType(WarAgentType.WarRocketLauncher,Messsages.MESSAGE_BASE_ORDER_ATTACK_AT, result.getAngle()+"");
-                    System.err.println("Base Send to "+ m.getSenderID() +" "+result.getAngle());
+                    double angle = (result.getAngle()+180) % 360;
+                    broadcastMessageToAgentType(WarAgentType.WarRocketLauncher,Messsages.MESSAGE_BASE_ORDER_ATTACK_AT, angle +"");
+                    System.err.println("Base Send to "+ m.getSenderID() +" "+angle);
                     return;
                   }
             }

@@ -32,9 +32,9 @@ public abstract class WarRocketLauncherBrainController extends WarRocketLauncher
 
   }
 
-  private void checkBaseOrder() {
+  private String checkBaseOrder() {
       if(_attack) {
-          return;
+          return ACTION_MOVE;
       }
     for (WarMessage m : getMessages()) {
       if (m.getMessage().equals(Messsages.MESSAGE_BASE_ORDER_GO_TO)) {
@@ -53,6 +53,7 @@ public abstract class WarRocketLauncherBrainController extends WarRocketLauncher
     
     // send my position at base
     broadcastMessageToAgentType(WarAgentType.WarBase, Messsages.MESSAGE_BASE_LOCATION);
+    return null;
   }
   
   
@@ -90,14 +91,19 @@ public abstract class WarRocketLauncherBrainController extends WarRocketLauncher
   @Override
   public String action() {
     checkBaseAttack();
-    checkBaseOrder();
+   
 
 
     String attack = tryAttack();
     if (attack != null) {
       return attack;
     }
-
+    
+    String order = checkBaseOrder();
+    if(order != null ){
+        return order;
+    }
+    
     if (isBlocked())
       setRandomHeading();
 

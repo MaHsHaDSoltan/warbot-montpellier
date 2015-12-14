@@ -30,7 +30,7 @@ public abstract class WarExplorerBrainController extends WarExplorerBrain {
         return;
       } else if(base != null && m.getMessage().equals(Messsages.MESSAGE_BASE_LOCATION)){
           PolarCoordinates result = Triangle.getAngleWithDistance(base.getAngle(), base.getDistance(), m.getAngle(), m.getDistance());
-          double angle = result.getAngle();
+          double angle = (result.getAngle() + 180) % 360;
           double distance = result.getDistance();
           broadcastMessageToAgentType(WarAgentType.WarBase, Messsages.MESSAGE_BASE_ENEMY_DETECTED, angle + "", distance + "");
           _angleBaseEnemyDetected = true;
